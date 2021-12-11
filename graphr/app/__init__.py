@@ -42,7 +42,11 @@ def home():
 
 @app.route('/employees', methods=['POST', 'GET'])
 def employees():
-    return render_template('employees.html')
+    page_data = {}
+    page_data['table_header'] = ['name','department','position']
+    page_data['employees'] = Neo.get_all_employees()
+
+    return render_template('employees.html', page_data=page_data)
 
 
 ##### DEPARTMENTS
@@ -117,8 +121,12 @@ def edit_dept(name):
 def delete_dept(name):
     ''' dept delete '''
     if request.method == 'POST':
-        flash(f'Successfully deleted department {name}')
-        return redirect('/departments')
+        if Neo.delete_dept(name):
+            flash(f'Successfully deleted department {name}')
+            return redirect('/departments')
+
+        flash('An unexpected error occured while processing your request', 'error')
+        return
 
 
 ##### STRUCTURE

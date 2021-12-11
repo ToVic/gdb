@@ -5,10 +5,33 @@
 {% endblock %}
 {% block content %}
 <body>
-    
-    
     <h1>Employees</h1>
+        <div class="float-end"><a class="btn btn-primary" href="{{ url_for('new_employee') }}">Add new employee</a></div>
+    
+        <div>
+        {% if page_data['employees'] %}    
+            <table class="table table-hover table-borderless table-md">
+                <thead class="table-light">
+                    <tr>
+                        {% for attribute in page_data['table_header'] %}
+                            <th>{{ attribute.capitalize() }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                {% for employee in page_data['employees'] %}
+                    {% if employee['id'] %}
+                    <tr>
+                        <td style="width: 20%;"><a href="{{ url_for('employee_detail', id=employee['id']) }}">{{ employee['surname'] }}, {{ employee['name'] }}</a></td>
+                        <td style="width: 50%;">{{ employee['department'] }}</td>
+                        <td style="width: 30%;">{{ employee['position'] }}</td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+                </tbody> 
 
+            {% endif %}
+        </div>
     
 </body>
 {% endblock %}

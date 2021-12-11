@@ -122,12 +122,33 @@ class Neo_client:
             logger.critical('Failed to execute a query; %s, exception: %s', type(self).__name__, e)
 
 
-    def delete_dept(self):
-        pass
+    def delete_dept(self, name):
+        '''
+        department deletion
+        '''
+        with self.driver.session() as session:
+            r = session.write_transaction(
+                self._delete_dept,
+                name
+            )
+            if not r:
+                logger.critical('Department deletion failed miserably')
+                return False
+            return True
 
 
-    def _delete_dept(self):
-        pass
+    def _delete_dept(self, tx, name: str):
+        query = (
+            '''
+            MATCH (d:Department {name: $name})
+            DELETE d
+            '''
+        )
+        result = tx.run(query, name=name)
+        try:
+            return result
+        except Exception as e:
+            logger.critical('Failed to execute a query; %s, exception: %s', type(self).__name__, e)
 
 
     def edit_dept(self, dept, name):

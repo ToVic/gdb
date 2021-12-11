@@ -5,6 +5,16 @@
 {% endblock %}
 {% block content %}
 <body>
-    
+    <h2>New department</h2>
+    <form method="post" onsubmit="return confirm('Add new employee?')">
+        <dl>
+            {{ render_field(form.surname) }}
+            {{ render_field(form.name) }}
+            {{ render_field(form.position) }}
+            {{ render_field(form.skills) }}
+            {{ render_field(form.note) }}
+        </dl>
+        <button type="submit" class="btn btn-success">Add employee</button>
+    </form>
 </body>
 {% endblock %}
