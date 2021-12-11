@@ -199,3 +199,35 @@ class Neo_client:
     def get_employee(self):
         '''returns employee details'''
         pass
+
+
+    def get_all_employees(self):
+        ''' returns all employees and their data '''
+        employees = []
+        with self.driver.session() as session:
+            r = session.read_transaction(
+                self._get_all_employees
+            )
+            if not r:
+                logger.critical('Employees overview lookup failed miserably.')
+                return "internal server error"
+            for row in r:
+                employee = row['e']
+                employees.append(employee)
+
+            logger.debug('##########################################')
+            logger.debug(employees)
+            
+            return employees
+
+
+    def _get_all_employees(self, tx):
+        query = (
+            "MATCH (e:Employee)"
+            "RETURN e"
+        )
+        result = tx.run(query)
+        try:
+            return [record for record in result]
+        except Exception as e:
+            logger.critical('Failed to execute a query; %s, exception: %s', type(self).__name__, e)
