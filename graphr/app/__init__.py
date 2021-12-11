@@ -10,6 +10,8 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 60
 app.static_folder = './static'
 app.secret_key = 'dumb_secret_key'
 
+NAVBAR_ITEMS = ['employees', 'departments', 'structure']
+
 
 @app.context_processor
 def inject_routes():
@@ -18,10 +20,21 @@ def inject_routes():
     This is needed because the parent template does not have
     its own route and can't be passed arguments
     """
-    navbar_items = ['employees', 'departments', 'structure overview']
-    links = [(item, item.capitalize()) for item in navbar_items]
+    links = [(item, item.capitalize()) for item in NAVBAR_ITEMS]
     return(dict(links=links))
 
 @app.route("/")
 def home():
     return render_template('home.html')
+
+@app.route('/'+NAVBAR_ITEMS[0], methods=['POST', 'GET'])
+def employees():
+    return render_template('employees.html')
+
+@app.route('/'+NAVBAR_ITEMS[1], methods=['POST', 'GET'])
+def departments():
+    return render_template('departments.html')
+
+@app.route('/'+NAVBAR_ITEMS[2], methods=['POST', 'GET'])
+def structure():
+    return render_template('structure.html')
