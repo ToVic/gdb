@@ -92,22 +92,72 @@ class Neo_client:
             logger.critical('Failed to execute a query; %s, exception: %s', type(self).__name__, e)
 
 
-    def get_dept(self, tx):
+    def get_dept(self, name: str):
         ''' get details of a particular department '''
-        pass
+        with self.driver.session() as session:
+            r = session.read_transaction(
+                self._get_dept,
+                name
+            )
+            if not r:
+                logger.critical('Departments overview lookup failed miserably.')
+                return "internal server error"
+            for row in r:
+                dept = {}
+                dept['name'] = row['d']['name']
+                dept['description'] = row['d']['description']
+            return dept
 
 
-    def edit_dept(self):
-        ''' edits department details '''
-        pass
+    def _get_dept(self, tx, name: str):
+        query = (
+            '''MATCH (d:Department)
+            WHERE d.name = $name
+            RETURN d'''
+        )
+        result = tx.run(query, name=name)
+        try:
+            return [record for record in result]
+        except Exception as e:
+            logger.critical('Failed to execute a query; %s, exception: %s', type(self).__name__, e)
 
 
     def delete_dept(self):
-        ''' 
-        deletes an entire department
-        UNSAFE
-        '''
         pass
+
+
+    def _delete_dept(self):
+        pass
+
+
+    def edit_dept(self, dept, name):
+        ''' edits department details '''
+
+        new_name = dept['name']
+        new_description = dept['description']
+        with self.driver.session() as session:
+            r = session.write_transaction(
+                self._edit_dept,
+                name, new_name, new_description
+            )
+        if not r:
+            logger.critical('Department deletion failed miserably.')
+            return False
+
+        return True
+
+
+    def _edit_dept(self, tx, name, new_name, new_description):
+        query = (
+            "MATCH (d:Department {name: $name})"
+            "SET d += {name: $new_name, description: $new_description}"
+            "RETURN d"
+        )
+        result = tx.run(query, name=name, new_name=new_name, new_description=new_description)
+        try:
+            return [record for record in result]
+        except Exception as e:
+            logger.critical('Failed to execute a query; %s, exception: %s', type(self).__name__, e)
 
 
     def create_employee(self):

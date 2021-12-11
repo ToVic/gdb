@@ -7,12 +7,11 @@
 <body>
     
 
-        <div>
         <h1>Departments</h1>
-            <form class="form-inline" action="{{ url_for('new_dept') }}" method="GET">
+            <!-- <form class="form-inline" action="{{ url_for('new_dept') }}" method="GET">
                 <button class="btn btn-primary float-right" type="submit">Add new department</button>
-            </form>
-        </div>
+            </form> -->
+        <div class="float-end"><a class="btn btn-primary" href="{{ url_for('new_dept') }}">Add new department</a></div>
     
         <div>
         {% if page_data['depts'] %}    
@@ -26,11 +25,13 @@
                 </thead>
                 <tbody>
                 {% for dept in page_data['depts'] %}
+                    {% if dept['name'] %}
                     <tr>
-                        <td style="width: 20%;">{{ dept['name'] }}</td>
+                        <td style="width: 20%;"><a href="{{ url_for('dept_detail', name=dept['name']) }}">{{ dept['name'] }}</a></td>
                         <td style="width: 50%;">{{ dept['description'] }}</td>
                         <td style="width: 30%;">{{ dept['CO'] }}</td>
                     </tr>
+                    {% endif %}
                 {% endfor %}
                 </tbody> 
 

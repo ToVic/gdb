@@ -3,6 +3,7 @@ from flask import Flask
 from flask import render_template, request, session, redirect, url_for, flash
 from .neo import Neo_client
 from .forms import NewDeptForm
+from ..logger import logger
 
 
 app = Flask(__name__)
@@ -29,7 +30,11 @@ def inject_routes():
 
 @app.route("/")
 def home():
-    ''' this will be an initial overview '''
+    ''' 
+    this will be an initial overview 
+    once it gets designed
+    '''
+
     return render_template('home.html')
 
 
@@ -65,10 +70,55 @@ def new_dept():
         if not r:
             flash('An unexpected error occured while processing your request', 'error')
         else:
-            flash('Department successfully added')
-            redirect('/departments')
+            flash('Department successfully added', 'success')
+            return redirect('/departments')
 
     return render_template('new_dept.html', form=form)
+
+
+@app.route('/departments/<string:name>', methods=['GET'])
+def dept_detail(name):
+    ''' dept detail '''
+
+    page_data = {}
+    page_data = Neo.get_dept(name)
+    if not page_data:
+        flash('An unexpected error occured while processing your request', 'error')
+    
+    return render_template('dept[name].html', page_data=page_data)
+
+
+@app.route('/departments/<string:name>/edit', methods=['GET','POST'])
+def edit_dept(name):
+    ''' dept edit '''
+
+    dept_data = Neo.get_dept(name)
+    if not dept_data:
+        flash('An unexpected error occured while processing your request', 'error')
+    form = NewDeptForm(request.form)
+    form.name.data = dept_data['name']
+    #form.description.data = dept_data['description']
+    if request.method == 'POST' and form.validate():
+        dept = {
+            'name': form.name.data,
+            'description': form.description.data,
+        }
+        if not Neo.edit_dept(dept, dept_data['name']):
+            flash('An unexpected error occured while processing your request', 'error')
+            return
+
+        flash('Edit successful', 'success')
+        return redirect(f'/departments/{name}')
+
+    return render_template('edit_dept.html', form=form)
+
+
+@app.route('/departments/<string:name>/delete', methods=['POST'])
+def delete_dept(name):
+    ''' dept delete '''
+    if request.method == 'POST':
+        flash(f'Successfully deleted department {name}')
+        return redirect('/departments')
 
 
 ##### STRUCTURE

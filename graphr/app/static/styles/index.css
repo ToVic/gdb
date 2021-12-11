@@ -46,4 +46,31 @@
  #content-div {
       padding: 2.5em;
  }
+
+ .error {
+     background-color: coral;
+     color: snow;
+ }
+
+ .success {
+     background-color: green;
+     color: snow;
+ }
  
+ .dept-card {
+     border-radius: 5%;
+     border-color: grey;
+     width: 500px;
+     margin-top: 20px;
+     padding-left: 15px;
+     border-width: 1px;
+ }
+
+ .edit-buttons {
+     display: flex;
+     justify-content: space-between;
+ }
+ 
+ .edit {
+      margin-right: 10px;
+ }
