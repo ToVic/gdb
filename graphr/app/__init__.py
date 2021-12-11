@@ -2,7 +2,7 @@
 from flask import Flask
 from flask import render_template, request, session, redirect, url_for, flash
 from .neo import Neo_client
-from .forms import NewDeptForm
+from .forms import NewDeptForm, NewEmployeeForm
 from ..logger import logger
 
 
@@ -47,6 +47,38 @@ def employees():
     page_data['employees'] = Neo.get_all_employees()
 
     return render_template('employees.html', page_data=page_data)
+
+@app.route('/employees/add', methods=['POST', 'GET'])
+def new_employee():
+
+    form = NewEmployeeForm(request.form)
+    if request.method == 'POST' and form.validate():
+        employee = {
+            'name': form.name.data,
+            'surname': form.surname.data,
+            'department': form.department.data,
+            'position': form.position.data,
+            'skills': form.skills.data,
+            'note': form.note.data
+        }
+        r = Neo.add_employee(employee)
+        if not r:
+            flash('An unexpected error occured while processing your request', 'error')
+        else:
+            flash('Employee successfully added', 'success')
+            return redirect('/employees')
+
+    return render_template('new_employee.html', form=form)
+
+
+@app.route('employees/<string:id>/edit', methods=['POST', 'GET'])
+def edit_employee(id):
+    pass
+
+
+@app.route('employees/<string:id>', methods=['POST', 'GET'])
+def employee_detail(id):
+    pass
 
 
 ##### DEPARTMENTS

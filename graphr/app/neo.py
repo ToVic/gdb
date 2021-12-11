@@ -162,7 +162,7 @@ class Neo_client:
                 name, new_name, new_description
             )
         if not r:
-            logger.critical('Department deletion failed miserably.')
+            logger.critical('Department editing failed miserably.')
             return False
 
         return True
@@ -181,18 +181,53 @@ class Neo_client:
             logger.critical('Failed to execute a query; %s, exception: %s', type(self).__name__, e)
 
 
-    def create_employee(self):
-        ''' creates a new employee '''
-        pass
+    def add_employee(self, employee):
+        ''' adds a new employee '''
+
+        name = employee['name']
+        surname = employee['surname']
+        position = employee['position']
+        department = employee['department']
+        skills = employee['skills']
+        note = employee['note']
+
+        with self.driver.session() as session:
+            r = session.write_transaction(
+                self._add_employee,
+                name, surname, position, department, skills, note
+            )
+        if not r:
+            logger.critical('Employee addition failed miserably.')
+            return False
+
+        return True
+
+
+    def _add_employee(self, tx, surname: str, name: str, position: str, department: str, skills: str, note: str):
+        relation = 'DIRECTS' if position=='director' else 'WORKS_IN'
+        query = (
+            '''
+            CREATE (e:Employee {name: $name, surname: $surname, position: $position, skills: $skills, note: %note})
+            MATCH (d:Department {name: $department})
+            CREATE (e)-[r:$relation]->(d)
+            RETURN e
+            '''
+        )
+        result = tx.run(query,
+                        name=name, 
+                        surname=surname,
+                        position=position,
+                        department=department,
+                        skills=skills,
+                        note=note)
+        try:
+            return [record for record in result]
+        except Exception as e:
+            logger.critical('Failed to execute a query; %s, exception: %s', type(self).__name__, e)
 
 
     def edit_employee(self):
         ''' edits employee details '''
-        pass
-
-
-    def edit_employee_dept(self):
-        ''' changes the employee relation vertex '''
         pass
 
 
