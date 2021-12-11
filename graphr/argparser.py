@@ -8,8 +8,8 @@ from graphr.version import __version__
 LOG_LEVEL_STRINGS = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG']
 LOG_LEVEL_DEFAULT = 'DEBUG'
 LOG_VERBOSE_DEFAULT = False
-API_LISTEN_ADDR_DEFAULT = '0.0.0.0'
-API_PORT_DEFAULT = 4242
+APP_LISTEN_ADDR_DEFAULT = '0.0.0.0'
+APP_PORT_DEFAULT = 4242
 
 def log_level_string_to_int(arg_string: str) -> int:
     '''get log level int from string'''
@@ -34,14 +34,26 @@ def get_pars():
     '''
 
     env_vars = {
-        'NEO_LOGIN': {
+        'LOG_LEVEL': {
             'default': LOG_LEVEL_DEFAULT
         },
-        'NEO_PASSWORD': {
+        'LOG_VERBOSE': {
             'default': LOG_VERBOSE_DEFAULT
+        },
+        'NEO_LOGIN': {
+            'required': True
+        },
+        'NEO_PASSWORD': {
+            'required': True
         },
         'NEO_URI': {
             'required': True,
+        },
+        'APP_PORT': {
+            'default': APP_PORT_DEFAULT
+        },
+        'APP_LISTEN_ADDR': {
+            'default': APP_LISTEN_ADDR_DEFAULT
         },
     }
 
@@ -67,6 +79,24 @@ def get_pars():
                               f"(default {LOG_LEVEL_DEFAULT})"),
                         type=log_level_string_to_int,
                         **env_vars['LOG_LEVEL'])
+    
+    Parser.add_argument('-a',
+                        '--app-listen-address',
+                        action='store',
+                        dest='app_listen_addr',
+                        help=("app listen address "
+                              f"(default {APP_LISTEN_ADDR_DEFAULT})"),
+                        type=str,
+                        **env_vars['APP_LISTEN_ADDR'])
+
+    Parser.add_argument('-o',
+                        '--app-port',
+                        action='store',
+                        dest='app_port',
+                        help=f'app listen port (default {APP_PORT_DEFAULT})',
+                        type=int,
+                        **env_vars['APP_PORT'])
+
 
     Parser.add_argument('-v',
                         '--log-verbose',

@@ -1,0 +1,19 @@
+{% extends "index.html" %}
+{% from "_formhelpers.html" import render_field %}
+{% block title %}Mirrors{% endblock %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<body>
+    <h2>New department</h2>
+    <form method="post" onsubmit="return confirm('Create department?')">
+        <dl>
+            {{ render_field(form.name) }}
+            {{ render_field(form.description) }}
+        </dl>
+        <button type="submit" class="btn btn-success">Add department</button>
+    </form>
+    
+</body>
+{% endblock %}

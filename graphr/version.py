@@ -6,7 +6,7 @@ __version__ = '0.0.1'
 app_name = 'repo'
 
 
-def _get_build_info_items(prefixes):
+def _get_build_info_items(prefixes: list):
     '''
     generate selected CI ENV iterator
     '''

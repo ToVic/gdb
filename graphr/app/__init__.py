@@ -1,6 +1,8 @@
 ''' main app routes '''
 from flask import Flask
-from flask import render_template, request, session, redirect, url_for
+from flask import render_template, request, session, redirect, url_for, flash
+from .neo import Neo_client
+from .forms import NewDeptForm
 
 
 app = Flask(__name__)
@@ -11,6 +13,8 @@ app.static_folder = './static'
 app.secret_key = 'dumb_secret_key'
 
 NAVBAR_ITEMS = ['employees', 'departments', 'structure']
+
+Neo = Neo_client()
 
 
 @app.context_processor
@@ -25,16 +29,50 @@ def inject_routes():
 
 @app.route("/")
 def home():
+    ''' this will be an initial overview '''
     return render_template('home.html')
 
-@app.route('/'+NAVBAR_ITEMS[0], methods=['POST', 'GET'])
+
+##### EMPLOYEES
+
+@app.route('/employees', methods=['POST', 'GET'])
 def employees():
     return render_template('employees.html')
 
-@app.route('/'+NAVBAR_ITEMS[1], methods=['POST', 'GET'])
-def departments():
-    return render_template('departments.html')
 
-@app.route('/'+NAVBAR_ITEMS[2], methods=['POST', 'GET'])
+##### DEPARTMENTS
+
+@app.route('/departments', methods=['POST', 'GET'])
+def departments():
+    page_data = {}
+    page_data['table_header'] = ['name','description','Chief officer']
+    page_data['depts'] = Neo.get_all_depts()
+
+    return render_template('departments.html', page_data=page_data)
+
+
+@app.route('/departments/new', methods=['POST', "GET"])
+def new_dept():
+    ''' department creation '''
+
+    form = NewDeptForm(request.form)
+    if request.method == 'POST' and form.validate():
+        dept = {
+            'name': form.name.data,
+            'description': form.description.data,
+        }
+        r = Neo.create_dept(dept)
+        if not r:
+            flash('An unexpected error occured while processing your request', 'error')
+        else:
+            flash('Department successfully added')
+            redirect('/departments')
+
+    return render_template('new_dept.html', form=form)
+
+
+##### STRUCTURE
+
+@app.route('/structure', methods=['POST', 'GET'])
 def structure():
     return render_template('structure.html')

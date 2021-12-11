@@ -39,5 +39,5 @@ setup(
         "Operating System :: OS Independent",
     ],
     entry_points={
-        'console_scripts': ['graphr=graphr.server:run_server'],
+        'console_scripts': ['graphr=graphr.server:main'],
     })
