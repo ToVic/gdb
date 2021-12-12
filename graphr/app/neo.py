@@ -99,19 +99,19 @@ class Neo_client:
                 name
             )
             if not r:
-                logger.critical('Departments overview lookup failed miserably.')
-                return "internal server error"
+                logger.critical('Department detail lookup failed miserably.')
+                return 
+
             for row in r:
-                dept = {}
-                dept['name'] = row['d']['name']
-                dept['description'] = row['d']['description']
-            return dept
+                data = row.data()['d']
+                logger.critical(data)
+                
+            return data
 
 
     def _get_dept(self, tx, name: str):
         query = (
-            '''MATCH (d:Department)
-            WHERE d.name = $name
+            '''MATCH (d:Department {name: $name})
             RETURN d'''
         )
         result = tx.run(query, name=name)
@@ -239,8 +239,63 @@ class Neo_client:
             logger.critical('Failed to execute a query; %s, exception: %s', type(self).__name__, e)
 
 
-    def edit_employee(self):
-        ''' edits employee details '''
+    def edit_employee(self, id:str, employee: dict):
+        ''' 
+        edits employee details
+        '''
+        name = employee['name']
+        surname = employee['surname']
+        position = employee['position']
+        department = employee['department']
+        skills = employee['skills']
+        note = employee['note']
+
+        with self.driver.session() as session:
+            r = session.write_transaction(
+                self._edit_employee,
+                id=id, surname=surname, name=name, position=position, department=department, skills=skills, note=note
+            )
+        if not r:
+            logger.critical('Department editing failed miserably.')
+            return False
+
+        return True
+
+
+    def _edit_employee(self, tx, id: str, surname: str, name: str, position: str, department: str, skills: str, note: str):
+        if position == 'director':
+            query = (
+                '''
+                MATCH (e:Employee {id: $id})-[r]-(d:Department)
+                SET e += {name: $name, surname: $surname, position: $position, skills: $skills, note: $note, id:$id}
+                DELETE r
+                MERGE (e)-[:DIRECTS]->(d)
+                RETURN e
+                '''
+            )
+        else:
+            query = (
+                '''
+                MATCH (e:Employee {id: $id})-[r]-(d:Department)
+                SET e += {name: $name, surname: $surname, position: $position, skills: $skills, note: $note, id:$id}
+                DELETE r
+                MERGE (e)-[:WORKS_IN]->(d)
+                RETURN e
+                '''
+            )
+
+        result = tx.run(query,
+                        name=name, 
+                        surname=surname,
+                        position=position,
+                        department=department,
+                        skills=skills,
+                        note=note,
+                        id=id)
+        try:
+            return [record for record in result]
+        except Exception as e:
+            logger.critical('Failed to execute a query; %s, exception: %s', type(self).__name__, e)
         pass
 
 
@@ -277,6 +332,36 @@ class Neo_client:
             logger.critical('Failed to execute a query; %s, exception: %s', type(self).__name__, e)
 
 
+    def delete_employee(self, id: str):
+        '''
+        employee deletion
+        '''
+        with self.driver.session() as session:
+            r = session.write_transaction(
+                self._delete_employee,
+                id=id
+            )
+            if not r:
+                logger.critical('Employee deletion failed miserably')
+                return False
+            return True
+
+
+    def _delete_employee(self, tx, id:str):
+        query = (
+            '''
+            MATCH (e:Employee {id: $id})-[r]-()
+            DELETE r
+            DELETE e
+            '''
+        )
+        result = tx.run(query, id=id)
+        try:
+            return result
+        except Exception as e:
+            logger.critical('Failed to execute a query; %s, exception: %s', type(self).__name__, e)
+
+
     def get_all_employees(self):
         ''' returns all employees and their data '''
         employees = []
@@ -293,9 +378,6 @@ class Neo_client:
                 department = data['d']
                 employee['department'] = department['name'] or 'N/A'
                 employees.append(employee)
-
-            logger.debug('##########################################')
-            logger.debug(employees)
             
             return employees
 

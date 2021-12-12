@@ -3,6 +3,7 @@ from flask import Flask
 from flask import render_template, request, session, redirect, url_for, flash
 from .neo import Neo_client
 from .forms import NewDeptForm, NewEmployeeForm
+from wtforms import Form, StringField, validators, TextAreaField, SelectField
 from ..logger import logger
 
 
@@ -27,6 +28,7 @@ def inject_routes():
     """
     links = [(item, item.capitalize()) for item in NAVBAR_ITEMS]
     return(dict(links=links))
+
 
 @app.route("/")
 def home():
@@ -76,12 +78,50 @@ def new_employee():
 
 @app.route('/employees/<string:id>/edit', methods=['POST', 'GET'])
 def edit_employee(id):
+    choices = [dept['name'] for dept in Neo.get_all_depts()]
+    initial_values = Neo.get_employee(id)
+    #initial values hack
+    class F(Form):
+        pass
+    
+    F.surname = StringField('surname', [validators.length(min=3, max=20), validators.DataRequired()], default=initial_values['surname'])
+    F.name = StringField('name', [validators.length(min=3, max=20), validators.DataRequired()], default=initial_values['name'])
+    F.department = SelectField('department', validate_choice=False, choices=choices, default=initial_values['department'])
+    F.position = StringField('position', [validators.length(min=3, max=20), validators.DataRequired()], default=initial_values['position'])
+    F.skills = StringField('skills', [validators.length(min=3, max=30), validators.DataRequired()], default=initial_values['skills'])
+    F.note = TextAreaField('note', render_kw={'class': 'form-control', 'rows': 5, 'columns': 50}, default=initial_values['note'])
+
+    form = F(request.form)
+    if request.method == 'POST' and form.validate():
+        employee = {
+            'name': form.name.data,
+            'surname': form.surname.data,
+            'department': form.department.data,
+            'position': form.position.data,
+            'skills': form.skills.data,
+            'note': form.note.data
+        }
+        r = Neo.edit_employee(id=id, employee=employee)
+        if not r:
+            flash('An unexpected error occured while processing your request', 'error')
+        else:
+            flash('Employee successfully added', 'success')
+            return redirect('/employees')
+
+    return render_template('edit_employee.html', form=form)
     pass
 
 
 @app.route('/employees/<string:id>/delete', methods=['POST', 'GET'])
 def delete_employee(id):
-    pass
+    ''' employee delete '''
+    if request.method == 'POST':
+        if Neo.delete_employee(id):
+            flash(f'Successfully deleted employee ID #{id}','success')
+            return redirect('/employees')
+
+        flash('An unexpected error occured while processing your request', 'error')
+        return
 
 
 @app.route('/employees/<string:id>', methods=['POST', 'GET'])
@@ -113,11 +153,10 @@ def new_dept():
     form = NewDeptForm(request.form)
     if request.method == 'POST' and form.validate():
         dept = {
-            'name': form.name.data,
+            'name': form.name.data.replace(' ','').capitalize(),
             'description': form.description.data,
         }
         #name is used as identifier, watch out
-        dept['name'].replace(' ','')
         r = Neo.create_dept(dept)
         if not r:
             flash('An unexpected error occured while processing your request', 'error')
@@ -149,7 +188,6 @@ def edit_dept(name):
         flash('An unexpected error occured while processing your request', 'error')
     form = NewDeptForm(request.form)
     form.name.data = dept_data['name']
-    #form.description.data = dept_data['description']
     if request.method == 'POST' and form.validate():
         dept = {
             'name': form.name.data,
@@ -160,6 +198,7 @@ def edit_dept(name):
             return
 
         flash('Edit successful', 'success')
+
         return redirect(f'/departments/{name}')
 
     return render_template('edit_dept.html', form=form)
@@ -170,7 +209,8 @@ def delete_dept(name):
     ''' dept delete '''
     if request.method == 'POST':
         if Neo.delete_dept(name):
-            flash(f'Successfully deleted department {name}')
+            flash(f'Successfully deleted department {name}', 'success')
+
             return redirect('/departments')
 
         flash('An unexpected error occured while processing your request', 'error')
