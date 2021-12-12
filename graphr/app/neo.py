@@ -71,9 +71,10 @@ class Neo_client:
                 logger.critical('Departments overview lookup failed miserably.')
                 return "internal server error"
             for row in r:
-                dept = {}
-                dept['name'] = row['d']['name']
-                dept['description'] = row['d']['description']
+                data = row.data()
+                dept = data['d']
+                director = data['e']
+                dept['director'] = director
                 depts.append(dept)
             
             return depts
@@ -82,7 +83,8 @@ class Neo_client:
     def _get_all_depts(self, tx) -> list:
         query = (
             "MATCH (d:Department)"
-            "RETURN d"
+            "OPTIONAL MATCH (d:Department)<-[r:DIRECTS]-(e:Employee)"
+            "RETURN d, e"
         )
         result = tx.run(query)
         try:

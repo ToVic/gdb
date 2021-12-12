@@ -27,7 +27,14 @@
                     <tr>
                         <td style="width: 20%;"><a id="link" href="{{ url_for('dept_detail', name=dept['name'].capitalize()) }}">{{ dept['name'] }}</a></td>
                         <td style="width: 50%;">{{ dept['description'] }}</td>
-                        <td style="width: 30%;">{{ dept['CO'] }}</td>
+                        <td style="width: 30%;">
+                            {% if dept['director']['surname'] is defined %}
+                            <a id="link" href="{{ url_for('employee_detail', id=dept['director']['id']) }}">
+                                {{ dept['director']['surname'] }}, {{ dept['director']['name'] }}</a>
+                            {% else %}
+                                N/A
+                            {% endif %}
+                            </td>
                     </tr>
                     {% endif %}
                 {% endfor %}
