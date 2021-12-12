@@ -40,37 +40,47 @@
  
  
  #navigation-bar {
-      padding: 1em;
+    padding: 1em;
  }
  
  #content-div {
-      padding: 2.5em;
+    padding: 2.5em;
  }
 
  .error {
-     background-color: coral;
-     color: snow;
+    background-color: coral;
+    color: snow;
  }
 
  .success {
-     background-color: green;
-     color: snow;
- }
+    background-color: green;
+    color: snow;
+}
  
  .dept-card {
-     border-radius: 5%;
-     border-color: grey;
-     width: 500px;
-     margin-top: 20px;
-     padding-left: 15px;
-     border-width: 1px;
+    border-radius: 5%;
+    border-color: grey;
+    width: 500px;
+    margin-top: 20px;
+    padding-left: 15px;
+    border-width: 1px;
  }
 
  .edit-buttons {
-     display: flex;
-     justify-content: space-between;
+    display: flex;
+    justify-content: space-between;
  }
  
  .edit {
-      margin-right: 10px;
+    margin-right: 10px;
+ }
+
+ #link {
+    color: black;
+    font-weight: 300;
+    text-decoration: none;
+ }
+ #link:hover {
+    font-weight: 500;
+    color: cornflowerblue;
  }

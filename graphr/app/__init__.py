@@ -48,10 +48,13 @@ def employees():
 
     return render_template('employees.html', page_data=page_data)
 
+
 @app.route('/employees/add', methods=['POST', 'GET'])
 def new_employee():
+    choices = [dept['name'] for dept in Neo.get_all_depts()]
 
     form = NewEmployeeForm(request.form)
+    form.department.choices = choices
     if request.method == 'POST' and form.validate():
         employee = {
             'name': form.name.data,
@@ -71,14 +74,25 @@ def new_employee():
     return render_template('new_employee.html', form=form)
 
 
-@app.route('employees/<string:id>/edit', methods=['POST', 'GET'])
+@app.route('/employees/<string:id>/edit', methods=['POST', 'GET'])
 def edit_employee(id):
     pass
 
 
-@app.route('employees/<string:id>', methods=['POST', 'GET'])
-def employee_detail(id):
+@app.route('/employees/<string:id>/delete', methods=['POST', 'GET'])
+def delete_employee(id):
     pass
+
+
+@app.route('/employees/<string:id>', methods=['POST', 'GET'])
+def employee_detail(id):
+    page_data = {}
+    page_data['order'] = ['id','surname','name','department','position','skills','note']
+    page_data['employee'] = Neo.get_employee(id)
+    if not page_data:
+        flash('An unexpected error occured while processing your request', 'error')
+    
+    return render_template('employee[id].html', page_data=page_data)
 
 
 ##### DEPARTMENTS
@@ -102,6 +116,8 @@ def new_dept():
             'name': form.name.data,
             'description': form.description.data,
         }
+        #name is used as identifier, watch out
+        dept['name'].replace(' ','')
         r = Neo.create_dept(dept)
         if not r:
             flash('An unexpected error occured while processing your request', 'error')

@@ -18,12 +18,19 @@
         </div>
     
         <div class="dept-card">
-            <p><b>Surname: </b>{{ page_data['surname'] }}</p>
-            <p><b>Name: </b>{{ page_data['name'] }}</p>
-            <p><b>Department: </b>{<a href="{{ url_for('dept_detail', name=page_data['department']) }}"></a>{{ page_data['department'] }}</p>
-            <p><b>Position: </b>{{ page_data['position'] }}</p>
-            <p><b>Skills: </b>{{ page_data['skills'] }}</p>
-            <p><b>Note: </b>{{ page_data['note'] }}</p>
+            {% for key in page_data['order'] %}
+                {% if key in page_data['employee'].keys() %}
+                    <p><b>{{ key }}: </b>
+                        {% if key == 'department' %}
+                        <a id="link" href="{{ url_for('dept_detail', name=page_data['employee'][key]) }}">
+                        {{ page_data['employee'][key] }}
+                        </a>
+                        {% else %}
+                        {{ page_data['employee'][key] }}
+                        {% endif %}
+                    </p>
+                {% endif %}
+            {% endfor %}
         </div>
 
 </body>

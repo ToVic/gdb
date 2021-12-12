@@ -1,5 +1,5 @@
 {% extends "index.html" %}
-{% block title %}Mirrors{% endblock %}
+{% block title %}Employees{% endblock %}
 {% block head %}
 {{ super() }}
 {% endblock %}
@@ -22,8 +22,8 @@
                 {% for employee in page_data['employees'] %}
                     {% if employee['id'] %}
                     <tr>
-                        <td style="width: 20%;"><a href="{{ url_for('employee_detail', id=employee['id']) }}">{{ employee['surname'] }}, {{ employee['name'] }}</a></td>
-                        <td style="width: 50%;">{{ employee['department'] }}</td>
+                        <td style="width: 20%;"><a id="link" href="{{ url_for('employee_detail', id=employee['id']) }}">{{ employee['surname'] }}, {{ employee['name'] }}</a></td>
+                        <td style="width: 50%;"><a id="link" href="{{ url_for('dept_detail', name=employee['department']) }}">{{ employee['department'] }}</a></td>
                         <td style="width: 30%;">{{ employee['position'] }}</td>
                     </tr>
                     {% endif %}

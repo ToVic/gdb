@@ -1,7 +1,6 @@
 ''' database connection object '''
 
 from secrets import randbelow
-from argparse import PARSER
 from neo4j import GraphDatabase
 from graphr.logger import logger
 from graphr.argparser import Pars
@@ -31,22 +30,21 @@ class Neo_client:
     def create_dept(self, dept: dict):
         ''' create department driver interaction '''
         name = dept.get('name')
-        id = self.new_id()
         description = dept.get('description')
         with self.driver.session() as session:
             r = session.write_transaction(
-                self._create_and_return_dept, name, id, description
+                self._create_and_return_dept, name, description
             )
             if not r:
                 logger.critical('Department creation failed miserably.')
                 return False
 
-        logger.info('Created department %s with id %s', name, id)
         return True
 
     
-    def _create_and_return_dept(self, tx, name: str, id: str, description: str):
+    def _create_and_return_dept(self, tx, name: str, description: str):
         ''' create department query '''
+        id = self.new_id()
         query = (
             '''
             CREATE (d:Department {name: $name, id: $id, description: $description})
@@ -54,7 +52,8 @@ class Neo_client:
             '''
         )
         result = tx.run(query, name=name, id=id, description=description)
-        try: 
+        try:
+            logger.info('Created department %s, id: %s', name, id)
             return result
 
         except Exception as e:
@@ -194,7 +193,7 @@ class Neo_client:
         with self.driver.session() as session:
             r = session.write_transaction(
                 self._add_employee,
-                name, surname, position, department, skills, note
+                surname=surname, name=name, position=position, department=department, skills=skills, note=note
             )
         if not r:
             logger.critical('Employee addition failed miserably.')
@@ -204,22 +203,36 @@ class Neo_client:
 
 
     def _add_employee(self, tx, surname: str, name: str, position: str, department: str, skills: str, note: str):
-        relation = 'DIRECTS' if position=='director' else 'WORKS_IN'
-        query = (
-            '''
-            CREATE (e:Employee {name: $name, surname: $surname, position: $position, skills: $skills, note: %note})
-            MATCH (d:Department {name: $department})
-            CREATE (e)-[r:$relation]->(d)
-            RETURN e
-            '''
-        )
+        id = self.new_id(6)
+        #stupid fckng neo4j driver syntax shenanigans
+        if position=='director':
+            query = (
+                '''
+                CREATE (e:Employee {name: $name, surname: $surname, position: $position, skills: $skills, note: $note, id:$id})
+                WITH e
+                MATCH (d:Department {name: $department})
+                MERGE (e)-[:DIRECTS]->(d)
+                RETURN e
+                '''
+            )
+        else:
+             query = (
+                '''
+                CREATE (e:Employee {name: $name, surname: $surname, position: $position, skills: $skills, note: $note, id:$id})
+                WITH e
+                MATCH (d:Department {name: $department})
+                MERGE (e)-[:WORKS_IN]->(d)
+                RETURN e
+                '''
+            )
         result = tx.run(query,
                         name=name, 
                         surname=surname,
                         position=position,
                         department=department,
                         skills=skills,
-                        note=note)
+                        note=note,
+                        id=id)
         try:
             return [record for record in result]
         except Exception as e:
@@ -231,9 +244,37 @@ class Neo_client:
         pass
 
 
-    def get_employee(self):
+    def get_employee(self, id: str):
         '''returns employee details'''
-        pass
+        with self.driver.session() as session:
+            r = session.read_transaction(
+                self._get_employee,
+                id
+            )
+            if not r:
+                logger.critical('Employee overview lookup failed miserably OR no employees present..')
+                return 
+            logger.critical(r)
+            for row in r:
+                data = row.data()
+                employee = data['e']
+                department = data['d']
+                employee['department'] = department['name'] or 'N/A'
+            return employee
+
+
+    def _get_employee(self, tx, id: str):
+        query = (
+            '''
+            MATCH (e:Employee {id: $id})-[]->(d:Department)
+            RETURN e, d
+            '''
+        )
+        result = tx.run(query, id=id)
+        try:
+            return [record for record in result]
+        except Exception as e:
+            logger.critical('Failed to execute a query; %s, exception: %s', type(self).__name__, e)
 
 
     def get_all_employees(self):
@@ -247,7 +288,10 @@ class Neo_client:
                 logger.critical('Employees overview lookup failed miserably.')
                 return "internal server error"
             for row in r:
-                employee = row['e']
+                data = row.data()
+                employee = data['e']
+                department = data['d']
+                employee['department'] = department['name'] or 'N/A'
                 employees.append(employee)
 
             logger.debug('##########################################')
@@ -258,8 +302,8 @@ class Neo_client:
 
     def _get_all_employees(self, tx):
         query = (
-            "MATCH (e:Employee)"
-            "RETURN e"
+            "MATCH (e:Employee)-[]->(d:Department)"
+            "RETURN e, d"
         )
         result = tx.run(query)
         try:
