@@ -8,9 +8,9 @@
 
         <h2>Department detail</h2>
         <div class='edit-buttons float-end'>
-                <a class="btn btn-warning edit" href="{{ url_for('edit_dept', name=page_data['name']) }}">Edit</a>
+                <a class="btn btn-warning edit" href="{{ url_for('edit_dept', name=page_data['dept']['name']) }}">Edit</a>
                  <form class="form-inline" 
-                        action="{{ url_for('delete_dept', name=page_data['name']) }}" 
+                        action="{{ url_for('delete_dept', name=page_data['dept']['name']) }}" 
                         method="POST"
                         onsubmit="return confirm('Delete this department?')">
                     <button class="btn btn-danger float-end" type="submit">Delete</button>
@@ -18,9 +18,33 @@
         </div>
     
         <div class="dept-card">
-            <p><b>Name: </b>{{ page_data['name'] }}</p>
-            <p><b>Description: </b>{{ page_data['description'] }}</p>
+            <p><b>Name: </b>{{ page_data['dept']['name'] }}</p>
+            <p><b>Description: </b>{{ page_data['dept']['description'] }}</p>
         </div>
+
+        <div style="margin-top: 50px;">
+            <h5>Department employees</h5>
+            {% if page_data['employees'] %}    
+                <table class="table table-hover table-borderless table-sm" style="width: 500px;">
+                    <thead class="table-light">
+                        <tr>
+                            {% for attribute in page_data['employees_header'] %}
+                                <th>{{ attribute.capitalize() }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for employee in page_data['employees'] %}
+                        {% if employee['id'] %}
+                        <tr>
+                            <td style="width: 60%;"><a id="link" href="{{ url_for('employee_detail', id=employee['id']) }}">{{ employee['surname'] }}, {{ employee['name'] }}</a></td>
+                            <td style="width: 40%;">{{ employee['position'] }}</td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                    </tbody> 
+                {% endif %}
+            </div>
 
 </body>
 {% endblock %}

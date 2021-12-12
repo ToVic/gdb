@@ -172,7 +172,9 @@ def dept_detail(name):
     ''' dept detail '''
 
     page_data = {}
-    page_data = Neo.get_dept(name)
+    page_data['employees_header'] = ['name','position']
+    page_data['employees'] = [employee for employee in Neo.get_all_employees() if employee['department']==name]
+    page_data['dept'] = Neo.get_dept(name)
     if not page_data:
         flash('An unexpected error occured while processing your request', 'error')
     
