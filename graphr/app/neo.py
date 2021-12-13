@@ -394,3 +394,33 @@ class Neo_client:
             return [record for record in result]
         except Exception as e:
             logger.critical('Failed to execute a query; %s, exception: %s', type(self).__name__, e)
+
+    
+    def get_aggregates(self):
+        ''' get aggregate stats for structure overview page '''
+        with self.driver.session() as session:
+            r = session.read_transaction(
+                self._get_aggregates
+            )
+            if not r:
+                logger.critical('Employees overview lookup failed miserably.')
+                return "internal server error"
+
+            data = r[0].data()
+            
+            return data
+
+
+
+    def _get_aggregates(self, tx):
+        query = (
+            '''
+            MATCH (e:Employee), (d:Department), ()-[r:DIRECTS]-()
+            RETURN count(DISTINCT e) as emp, count(DISTINCT d) as dep, count(DISTINCT r) as dir
+            '''
+        )
+        result = tx.run(query)
+        try:
+            return [record for record in result]
+        except Exception as e:
+            logger.critical('Failed to execute a query; %s, exception: %s', type(self).__name__, e)

@@ -6,8 +6,41 @@
 {% block content %}
 <body>
     
-    
-    <h1>Company structure</h1>
+    <div style="text-align: center;"><h2>Structure overview</h2></div>
+    <div style="margin-top: 30px;">
+    <div class="container">
+        <div class="row h-50" style="margin-top: 30px;">
+          <div class="col-sm" style="text-align: center;">
+            <b>Total employees</b>
+            <p>{{ page_data['emp'] }}</p>
+          </div>
+          <div class="col-sm" style="text-align: center;">
+            <b>Total departments</b>
+            <p>{{ page_data['dep'] }}</p>
+          </div>
+          <div class="col-sm" style="text-align: center;">
+            <b>Total COs</b>
+            <p>{{ page_data['dir'] }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="container">
+        <div class="row" style="margin-top: 30px;">
+            <div class="col-sm" style="text-align: center;">
+                <b>New hires</b>
+                <p>6</p>
+            </div>
+            <div class="col-sm" style="text-align: center;">
+                <b>Terminated</b>
+                <p>4</p>
+            </div>
+            <div class="col-sm" style="text-align: center;">
+                <b>+/- this month</b>
+                <p style="color: green">+2</p>
+            </div>
+        </div>
+    </div>
+    </div>
 
     
 </body>

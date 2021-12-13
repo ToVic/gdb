@@ -223,4 +223,10 @@ def delete_dept(name):
 
 @app.route('/structure', methods=['POST', 'GET'])
 def structure():
-    return render_template('structure.html')
+    '''
+    very basic structure overview
+    '''
+
+    data = Neo.get_aggregates()
+    
+    return render_template('structure.html', page_data=data)
