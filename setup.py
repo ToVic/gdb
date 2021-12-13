@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+from graphr.version import __version__
 
 
 try: 
@@ -13,9 +14,6 @@ try:
         required = fh.read().splitlines()
 except FileNotFoundError:
     required = []
-
-
-__version__ = "0.1.0"
 
 setup(
     name="graphr",
