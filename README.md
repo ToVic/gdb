@@ -1,4 +1,4 @@
-# GRAPH v0.1.0
+# GRAPHR v0.1.0
 An HR administration system outline using **Neo4j Aura** in the backend
 
 ## INSTALLATION
