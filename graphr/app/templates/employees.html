@@ -23,7 +23,7 @@
                     {% if employee['id'] %}
                     <tr>
                         <td style="width: 20%;"><a id="link" href="{{ url_for('employee_detail', id=employee['id']) }}">{{ employee['surname'] }}, {{ employee['name'] }}</a></td>
-                        <td style="width: 50%;"><a id="link" href="{{ url_for('dept_detail', name=employee['department']) }}">{{ employee['department'] }}</a></td>
+                        <td style="width: 50%;">{% if not employee['department']=='N/A' %}<a id="link" href="{{ url_for('dept_detail', name=employee['department']) }}">{% endif %}{{ employee['department'] }}</a></td>
                         <td style="width: 30%;">{{ employee['position'] }}</td>
                     </tr>
                     {% endif %}

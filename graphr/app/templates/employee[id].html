@@ -21,7 +21,7 @@
             {% for key in page_data['order'] %}
                 {% if key in page_data['employee'].keys() %}
                     <p><b>{{ key }}: </b>
-                        {% if key == 'department' %}
+                        {% if (key == 'department') and (page_data['employee'][key] != 'N/A') %}
                         <a id="link" href="{{ url_for('dept_detail', name=page_data['employee'][key]) }}">
                         {{ page_data['employee'][key] }}
                         </a>

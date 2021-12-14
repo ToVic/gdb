@@ -127,7 +127,7 @@ def delete_employee(id):
 @app.route('/employees/<string:id>', methods=['POST', 'GET'])
 def employee_detail(id):
     page_data = {}
-    page_data['order'] = ['id','surname','name','department','position','skills','note']
+    page_data['order'] = ['id','surname','name','department','assigned','position','started','skills','note']
     page_data['employee'] = Neo.get_employee(id)
     if not page_data:
         flash('An unexpected error occured while processing your request', 'error')
@@ -185,17 +185,26 @@ def dept_detail(name):
 def edit_dept(name):
     ''' dept edit '''
 
-    dept_data = Neo.get_dept(name)
-    if not dept_data:
+    #initial values hack
+    class F(Form):
+        pass
+
+    initial_values = Neo.get_dept(name)
+    if not initial_values:
         flash('An unexpected error occured while processing your request', 'error')
-    form = NewDeptForm(request.form)
-    form.name.data = dept_data['name']
+
+    F.name = StringField('surname', [validators.length(min=3, max=20), validators.DataRequired()], default=initial_values['name'],
+                render_kw={'disabled': True})
+    F.description = TextAreaField('description', [validators.length(min=10, max=160), 
+                validators.DataRequired()], render_kw={'class': 'form-control', 'rows': 5, 'columns': 50}, default=initial_values['description'])
+    
+    form = F(request.form)
     if request.method == 'POST' and form.validate():
         dept = {
             'name': form.name.data,
             'description': form.description.data,
         }
-        if not Neo.edit_dept(dept, dept_data['name']):
+        if not Neo.edit_dept(dept, initial_values['name']):
             flash('An unexpected error occured while processing your request', 'error')
             return
 
@@ -228,5 +237,6 @@ def structure():
     '''
 
     data = Neo.get_aggregates()
+    data['saldo'] = data['newbies'] - data['terminated']
     
     return render_template('structure.html', page_data=data)

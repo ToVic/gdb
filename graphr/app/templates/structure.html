@@ -28,15 +28,19 @@
         <div class="row" style="margin-top: 30px;">
             <div class="col-sm" style="text-align: center;">
                 <b>New hires</b>
-                <p>6</p>
+                <p>{{ page_data['newbies'] }}</p>
             </div>
             <div class="col-sm" style="text-align: center;">
                 <b>Terminated</b>
-                <p>4</p>
+                <p>{{ page_data['terminated'] }}</p>
             </div>
             <div class="col-sm" style="text-align: center;">
                 <b>+/- this month</b>
-                <p style="color: green">+2</p>
+                {% if page_data['saldo'] >= 0 %}
+                <p style="color: green">+{{ page_data['saldo'] }}</p>
+                {% else %}
+                <p style="color: red">{{ page_data['saldo'] }}</p>
+                {% endif %}
             </div>
         </div>
     </div>
