@@ -36,7 +36,7 @@ The server is powered by ```gevent``` library which offers an easy and reliable 
 ### CYPHER QUERIES
 - the app leverages basic syntax while securing the CRUD operations on the Neo4j backend
 - see ```neo.py```, the code is partially self-documented and the queries are visible nicely
-- the longer ```_edit``` queries are not optimized
+- the longer ```_edit``` queries are not optimized  
 **essential: optional matches**  
 The application will not allow creation of an employee without assigning the employee to a department.
 However, there are some workflows that can break this rule, typically upon deleting a department:
@@ -44,3 +44,5 @@ However, there are some workflows that can break this rule, typically upon delet
 match department --> delete all department relationships --> delete department
 ```
 The use of optional matches ensures that even department without any employees, and vice versa, get manipulated properly.  
+**time-related queries**  
+Due to some issues while trying to make the datetime supporting methods work, there is an 'engineered' string-manipulating, hacky solution for the query responsible for calculating the newbies coming in this month. See ```neo.py```, line 465 and further.
