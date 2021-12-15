@@ -115,7 +115,7 @@ class Neo_client:
             for row in r:
                 data = row.data()['d']
                 logger.critical(data)
-                
+            logger.critical(data)
             return data
 
 
@@ -149,7 +149,8 @@ class Neo_client:
     def _delete_dept(self, tx, name: str):
         query = (
             '''
-            MATCH (d:Department {name: $name})<-[r]-()
+            MATCH (d:Department {name: $name})
+            OPTIONAL MATCH (d:Department {name: $name})<-[r]-()
             DELETE r
             DELETE d
             '''
@@ -381,7 +382,8 @@ class Neo_client:
     def _delete_employee(self, tx, id:str):
         query = (
             '''
-            MATCH (e:Employee {id: $id})-[r]-()
+            MATCH (e:Employee {id: $id})
+            OPTIONAL MATCH (e:Employee {id: $id})-[r]-()
             DELETE r
             DELETE e
             '''

@@ -193,7 +193,7 @@ def edit_dept(name):
     if not initial_values:
         flash('An unexpected error occured while processing your request', 'error')
 
-    F.name = StringField('surname', [validators.length(min=3, max=20), validators.DataRequired()], default=initial_values['name'],
+    F.name = StringField('surname', [validators.length(min=2, max=20), validators.DataRequired()], default=initial_values['name'],
                 render_kw={'disabled': True})
     F.description = TextAreaField('description', [validators.length(min=10, max=160), 
                 validators.DataRequired()], render_kw={'class': 'form-control', 'rows': 5, 'columns': 50}, default=initial_values['description'])
