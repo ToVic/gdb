@@ -31,7 +31,7 @@
 
                         {% if (key == 'project') and (page_data['employee'][key]) %}
                         <a id="link" href="{{ url_for('project_detail', id=page_data['employee']['project_id']) }}">
-                        {{ page_data['employee'][key] }}
+                        {{ page_data['employee']['project'] }}
                         </a>
                         {% endif %}
                     </p>
