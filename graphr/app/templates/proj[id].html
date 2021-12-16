@@ -6,34 +6,30 @@
 {% block content %}
 <body>
 
-        <h2>Department detail</h2>
+        <h2>Project detail</h2>
         <div class='edit-buttons float-end'>
-                <a class="btn btn-warning edit" href="{{ url_for('edit_dept', name=page_data['dept']['name']) }}">Edit</a>
+                <a class="btn btn-warning edit" href="">Edit</a>
                  <form class="form-inline" 
-                        action="{{ url_for('delete_dept', name=page_data['dept']['name']) }}" 
+                        action="{{ url_for('delete_project', id=page_data['project']['id']) }}" 
                         method="POST"
-                        onsubmit="return confirm('Delete this department?')">
+                        onsubmit="return confirm('Delete this project?')">
                     <button class="btn btn-danger float-end" type="submit">Delete</button>
                 </form>
         </div>
     
         <div class="dept-card">
-            <p><b>Name: </b>{{ page_data['dept']['name'] }}</p>
-            <p><b>Description: </b>{{ page_data['dept']['description'] }}</p>
-            <p><b>Projects:</b></p>
-            {% if page_data['dept']['projects'] %}
-                {% for project in page_data['dept']['projects'] %}
-                    {% if project['id'] %}
-                        <p> #{{ project['id'] }} - <a id="link" href="{{ url_for('project_detail', id=project['id']) }}">{{ project['name'] }}</a></p>
-                    {% endif %}
-                    {% endfor %}
-                {% endif %}
+            <p><b>ID: </b>{{ page_data['project']['id'] }}</p>
+            <p><b>Name: </b>{{ page_data['project']['name'] }}</p>
+            <p><b>Description: </b>{{ page_data['project']['description'] }}</p>
+            <p><b>Client: </b>{{ page_data['project']['client'] }}</p>
+            <p><b>Assigned: </b>{{ page_data['project']['since'] }}</p>
+            <p><b>Owning department: </b> <a id="link" href="{{ url_for('dept_detail', name= page_data['project']['department']) }}">{{ page_data['project']['department'] }}</a></p>
         </div>
 
-        <div class="employees" style="margin-top: 50px;">
-            <h5>Department employees</h5>
+        <div style="margin-top: 50px;">
+            <h5>Project assigned employees</h5>
             {% if page_data['employees'] %}    
-                <table id="ttttt" class="table table-hover table-borderless table-sm" style="width: 500px;">
+                <table class="table table-hover table-borderless table-sm" style="width: 500px;">
                     <thead class="table-light">
                         <tr>
                             {% for attribute in page_data['employees_header'] %}

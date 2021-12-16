@@ -2,9 +2,8 @@
 from flask import Flask
 from flask import render_template, request, session, redirect, url_for, flash
 from .neo import Neo_client
-from .forms import NewDeptForm, NewEmployeeForm
+from .forms import NewDeptForm, NewEmployeeForm, NewProjectForm
 from wtforms import Form, StringField, validators, TextAreaField, SelectField
-from ..logger import logger
 
 
 app = Flask(__name__)
@@ -14,7 +13,7 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 60
 app.static_folder = './static'
 app.secret_key = 'dumb_secret_key'
 
-NAVBAR_ITEMS = ['employees', 'departments', 'structure']
+NAVBAR_ITEMS = ['employees', 'departments', 'projects', 'structure']
 
 Neo = Neo_client()
 
@@ -78,7 +77,8 @@ def new_employee():
 
 @app.route('/employees/<string:id>/edit', methods=['POST', 'GET'])
 def edit_employee(id):
-    choices = [dept['name'] for dept in Neo.get_all_depts()]
+    dept_choices = [dept['name'] for dept in Neo.get_all_depts()]
+    proj_choices = [proj['name'] for proj in Neo.get_all_projects()]
     initial_values = Neo.get_employee(id)
     #initial values hack
     class F(Form):
@@ -86,9 +86,10 @@ def edit_employee(id):
     
     F.surname = StringField('surname', [validators.length(min=3, max=20), validators.DataRequired()], default=initial_values['surname'])
     F.name = StringField('name', [validators.length(min=3, max=20), validators.DataRequired()], default=initial_values['name'])
-    F.department = SelectField('department', validate_choice=False, choices=choices, default=initial_values['department'])
+    F.department = SelectField('department', validate_choice=False, choices=dept_choices, default=initial_values['department'])
     F.position = StringField('position', [validators.length(min=3, max=20), validators.DataRequired()], default=initial_values['position'])
     F.skills = StringField('skills', [validators.length(min=3, max=30), validators.DataRequired()], default=initial_values['skills'])
+    F.project = SelectField('project', validate_choice=False, choices=proj_choices, default=initial_values['project'])
     F.note = TextAreaField('note', render_kw={'class': 'form-control', 'rows': 5, 'columns': 50}, default=initial_values['note'])
 
     form = F(request.form)
@@ -99,7 +100,8 @@ def edit_employee(id):
             'department': form.department.data,
             'position': form.position.data,
             'skills': form.skills.data,
-            'note': form.note.data
+            'note': form.note.data,
+            'project': form.project.data,
         }
         r = Neo.edit_employee(id=id, employee=employee)
         if not r:
@@ -127,7 +129,7 @@ def delete_employee(id):
 @app.route('/employees/<string:id>', methods=['POST', 'GET'])
 def employee_detail(id):
     page_data = {}
-    page_data['order'] = ['id','surname','name','department','assigned','position','started','skills','note']
+    page_data['order'] = ['id','surname','name','department','assigned','position','started','skills','note','project']
     page_data['employee'] = Neo.get_employee(id)
     if not page_data:
         flash('An unexpected error occured while processing your request', 'error')
@@ -173,6 +175,7 @@ def dept_detail(name):
 
     page_data = {}
     page_data['employees_header'] = ['name','position']
+    page_data['projects_header'] = ['id', 'name']
     page_data['employees'] = [employee for employee in Neo.get_all_employees() if employee['department']==name]
     page_data['dept'] = Neo.get_dept(name)
     if not page_data:
@@ -240,3 +243,67 @@ def structure():
     data['saldo'] = data['newbies'] - data['terminated']
     
     return render_template('structure.html', page_data=data)
+
+
+##### PROJECTS
+
+@app.route('/projects', methods=['POST', 'GET'])
+def projects():
+    page_data = {}
+    page_data['table_header'] = ['id','name','assigned']
+    page_data['projects'] =  Neo.get_all_projects()
+
+    return render_template('projects.html', page_data=page_data)
+
+
+@app.route('/projects/new', methods=['POST', "GET"])
+def new_project():
+    ''' project creation '''
+
+
+    choices = [dept['name'] for dept in Neo.get_all_depts()]
+
+    form = NewProjectForm(request.form)
+    form.department.choices = choices
+    if request.method == 'POST' and form.validate():
+        dept = {
+            'name': form.name.data.replace(' ','').capitalize(),
+            'client': form.client.data.replace(' ','').capitalize(),
+            'department': form.department.data,
+            'description': form.description.data,
+        }
+        r = Neo.create_project(dept)
+        if not r:
+            flash('An unexpected error occured while processing your request', 'error')
+        else:
+            flash('Department successfully added', 'success')
+            return redirect('/projects')
+
+    return render_template('new_project.html', form=form)
+
+
+@app.route('/projects/<string:id>', methods=['GET'])
+def project_detail(id):
+    ''' dept detail '''
+
+    page_data = {}
+    page_data['employees_header'] = ['name','position']
+    page_data['employees'] = [employee for employee in Neo.get_all_employees() if employee['project_id']==id]
+    page_data['project'] = Neo.get_project(id)
+    if not page_data:
+        flash('An unexpected error occured while processing your request', 'error')
+    
+    return render_template('proj[id].html', page_data=page_data)
+
+
+@app.route('/projects/<string:id>/delete', methods=['POST'])
+def delete_project(id):
+    ''' project delete '''
+    if request.method == 'POST':
+        if Neo.delete_project(id):
+            flash(f'Successfully deleted project {id}', 'success')
+
+            return redirect('/projects')
+
+        flash('An unexpected error occured while processing your request', 'error')
+        return

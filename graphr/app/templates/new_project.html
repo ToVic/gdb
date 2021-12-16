@@ -1,0 +1,21 @@
+{% extends "index.html" %}
+{% from "_formhelpers.html" import render_field %}
+{% block title %}Add project{% endblock %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<body>
+    <h2>New project</h2>
+    <form method="post" onsubmit="return confirm('Create project?')">
+        <dl>
+            {{ render_field(form.name) }}
+            {{ render_field(form.client) }}
+            {{ render_field(form.department) }}
+            {{ render_field(form.description) }}
+        </dl>
+        <button type="submit" class="btn btn-success">Add project</button>
+    </form>
+    
+</body>
+{% endblock %}

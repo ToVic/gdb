@@ -1,0 +1,42 @@
+{% extends "index.html" %}
+{% block title %}Projects{% endblock %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<body>
+        <h1>Projects</h1>
+            <!-- <form class="form-inline" action="{{ url_for('new_dept') }}" method="GET">
+                <button class="btn btn-primary float-right" type="submit">Add new department</button>
+            </form> -->
+        <div class="float-end"><a class="btn btn-primary" href="{{ url_for('new_project') }}">Add new project</a></div>
+    
+        <div>
+        {% if page_data['projects'] %}    
+            <table class="table table-hover table-borderless table-md">
+                <thead class="table-light">
+                    <tr>
+                        {% for attribute in page_data['table_header'] %}
+                            <th>{{ attribute.capitalize() }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                {% for proj in page_data['projects'] %}
+                    {% if proj['id'] %}
+                    <tr>
+                        <td style="width: 20%;">{{ proj['id'] }}</a></td>
+                        <td style="width: 50%;"><a id="link" href="{{ url_for('project_detail', id=proj['id']) }}">{{ proj['name'] }}</a></td>
+                        <td style="width: 30%;"><a id="link" href="{{ url_for('dept_detail', name=proj['dept']['name']) }}">
+                                {{ proj['dept']['name'] }}</a>
+                            </td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+                </tbody> 
+
+            {% endif %}
+        </div>
+
+</body>
+{% endblock %}
